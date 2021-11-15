@@ -18,7 +18,7 @@ pip install git+https://github.com/asrafulashiq/socket_pair
   from socket_pair.socket_pair import SockPairs
   ```
 
-- All teams should initialize `sockObj` first. For example, for `RPI`, is shoulds be:
+- All teams should initialize `sockObj` first. For example, for `RPI`, it should be:
 
   ```python
   sockObj = SockPairs(name_self='RPI', 
@@ -57,7 +57,7 @@ Each team should call `sync_all` three times:
 
 1. At the beginning of batch, so that everyone starts from the same line
 2. When Pooja copies the frames for processing
-3. When everyone finishes the batch 
+3. When everyone finishes the batch processing 
 
 Hence, Pooja's code should look like:
 
