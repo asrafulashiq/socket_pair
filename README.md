@@ -2,19 +2,17 @@
 
 ## Installation
 
-First, install `pyzmq` package.
+First, install `socket_pair` package.
 
 ```bash
-pip install pyzmq
+pip install git+https://github.com/asrafulashiq/socket_pair
 ```
-
-Copy `socket_pair.py` in the working directory.
 
 ## Instruction
 
 ### Initialization
 
-All groups should initialize `sockObj` first. For example, for `RPI`, is shoulds be:
+All teams should initialize `sockObj` first. For example, for `RPI`, is shoulds be:
 
 ```python
 sockObj = SockPairs(name_self='RPI', 
@@ -28,16 +26,79 @@ sockObj = SockPairs(name_self='MU',
                     name_other=['NU', 'RPI', 'Pooja'])
 ```
 
-After initializing the python object, all groups will call:
-
-```python
-sockObj.sync_all()
-```
-
-This ensures that everyone is one the same line and the communication is working properly.
-
 
 ### Synchronization
 
 For synchronization between groups, there are two functions: `sync_all` and `sync_with`.
 
+### `sync_all`
+
+`sync_all` should be called three times:
+
+1. At the beginning of batch, so that everyone starts from the same line
+2. When Pooja copies the frames for processing
+3. When everyone finishes the batch 
+
+Hence, Pooja's code should look like:
+
+```python
+sockObj.sync_all()  # batch start
+
+# Pooja copies the current batch in a folder for the group to process
+sockObj.sync_all()
+
+# ...
+
+# End of batch, sync here 
+sockObj.sync_all()
+
+```
+
+Codes for other groups should look like:
+
+```python
+# start batch
+sockObj.sync_all()
+
+# wait to sync here so that next batch from Pooja is ready
+sockObj.sync_all()
+
+# End of batch, sync here 
+sockObj.sync_all()
+```
+
+### `sync_with`
+
+`sync_with` is called when two groups want to be in sync with each other. In our setting, this happens in the following cases:
+
+- When `MU` finishes person processing, `MU` should let `NU` know that the person processing is done and they should be in sync. The code block for `MU` should be:
+  
+  ```python
+    # finish person processing
+    sockObj.sync_with('NU')
+  ```
+
+  And NU's code shoudl look like:
+  
+  ```python
+    # finish pre-processing for action detection
+
+    sockObj.sync_with('MU')
+  ```
+
+- When `RPI` finishes bin processing, `RPI` and `NU` should be in sync. RPI's code:
+  
+  ```python
+    # finish bin processing
+
+    sockObj.sync_with('MU')
+  ```
+
+  And NU's code shoudl look like:
+  
+  ```python
+    # finish pre-processing for action detection
+    # read person results from MU
+
+    sockObj.sync_with('RPI')
+  ```
