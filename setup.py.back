@@ -1,0 +1,21 @@
+from distutils.core import setup
+import os
+
+
+# Utility function to read the README file.
+# Used for the long_description.  It's nice, because now 1) we have a top level
+# README file and 2) it's easier to type in the README file than to put a raw
+# string in below ...
+def read(fname):
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
+
+setup(name='socket_pair',
+      version='0.0.1',
+      description='A simple socket pair for the CLASP project',
+      author='Ashraful Islam',
+      author_email='asrafulashiq@gmail.com',
+      long_description=read('README.md'),
+      packages=['socket_pair'],
+      package_dir={'': 'src'},
+      install_requires=['pyzmq', 'loguru'])
