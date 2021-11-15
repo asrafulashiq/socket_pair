@@ -32,6 +32,13 @@ pip install git+https://github.com/asrafulashiq/socket_pair
                       name_other=['NU', 'RPI', 'Pooja'])
   ```
 
+  And for `NU`:
+
+  ```python
+  sockObj = SockPairs(name_self='NU', 
+                      name_other=['MU', 'RPI', 'Pooja'])
+  ```
+
   And for Pooja, 
 
   ```python
@@ -58,6 +65,7 @@ Hence, Pooja's code should look like:
 sockObj.sync_all()  # batch start
 
 # Pooja copies the current batch in a folder for the group to process
+# and then call
 sockObj.sync_all()
 
 # ...
@@ -75,6 +83,8 @@ sockObj.sync_all()
 
 # wait to sync here so that next batch from Pooja is ready
 sockObj.sync_all()
+
+# Read the frames after sync_all
 
 # ... 
 
