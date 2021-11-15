@@ -100,38 +100,43 @@ sockObj.sync_all()
   
   ```python
     # ... 
-    # finish person processing
+    # finished person processing
+    # and then call:
     sockObj.sync_with('NU')
     # ...
   ```
 
-  And NU's code shoudl look like:
+  And NU's code should look like:
   
   ```python
     # ...
     # finish pre-processing for action detection
-
     sockObj.sync_with('MU')
+
+    # Read MU's PAX results
     # ...
+
   ```
 
 - When `RPI` finishes bin processing, `RPI` and `NU` should be in sync. RPI's code:
   
   ```python
     # ...
-    # finish bin processing
-
+    # finished bin processing
     sockObj.sync_with('MU')
+
     # ...
   ```
 
-  And NU's code shoudl look like:
+  And NU's code should look like:
   
   ```python
     # ...
-    # finish pre-processing for action detection
-    # read person results from MU
-
+    # finished pre-processing for action detection
+    # and then call:
     sockObj.sync_with('RPI')
+
+    # read bin results from RPI
+
     # ...
   ```
