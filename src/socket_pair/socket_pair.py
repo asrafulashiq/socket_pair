@@ -1,5 +1,6 @@
 from typing import List, MutableSequence, Optional, Union
 import zmq
+import socket
 
 try:
     from loguru import logger
@@ -10,6 +11,23 @@ except ModuleNotFoundError:
     logger = logging.getLogger('socket-server')
 
 
+def is_port_open(port: int) -> bool:
+    a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    location = ("127.0.0.1", port)
+    result_of_check = a_socket.connect_ex(location)
+
+    res = False
+    if result_of_check == 0:
+        print("Port is open")
+        res = True
+    else:
+        print("Port is not open")
+        res = False
+    a_socket.close()
+    return res
+
+
 def string_to_int(s):
     ord3 = lambda x: '%.3d' % ord(x)
     return int(''.join(map(ord3, s)))
@@ -17,6 +35,8 @@ def string_to_int(s):
 
 def get_random_port(name: Union[str, List[str]] = '') -> int:
     port = hash(string_to_int(name)) % 100 + 5555
+    # while not is_port_open(port):
+    #     port += 1
     return port
 
 
@@ -93,13 +113,29 @@ class _SocketPair(object):
     def init_server(self):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PAIR)
-        self.socket.bind("tcp://*:%s" % self.port)
+        while True:
+            try:
+                self.socket.bind("tcp://*:%s" % self.port)
+            except zmq.error.ZMQError:
+                logger.error(f'Port {self.port} is already in use')
+                self.port += 1
+            else:
+                break
+
         logger.info(f"Server {self.server_name} started on port {self.port}")
 
     def init_client(self):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PAIR)
-        self.socket.connect("tcp://localhost:%s" % self.port)
+        while True:
+            try:
+                self.socket.connect("tcp://localhost:%s" % self.port)
+            except zmq.error.ZMQError:
+                logger.error(f'Port {self.port} is already in use')
+                self.port += 1
+            else:
+                break
+
         logger.info(
             f"Client {self.client_name} Connected to server {self.server_name} on port {self.port}"
         )

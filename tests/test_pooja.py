@@ -1,17 +1,21 @@
 from socket_pair.socket_pair import SockPairs
+import time
 
 myself = 'Pooja'
 others = ['NU', 'RPI']
-# others = ['RPI']
+# others = ['Pooja']
 other = 'RPI'
 
 sockObj = SockPairs(myself, others)
 
+# start
 sockObj.sync_all()
 
-sockObj.sync_with(other)
+# store frames
+sockObj.sync_all()
 
-print(sockObj.listen(other))
-sockObj.send({'msg': 'hello back'}, other)
+time.sleep(1)
 
-obj = sockObj.listen(other)
+
+# batch-end: final sync
+sockObj.sync_all()
