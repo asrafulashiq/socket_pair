@@ -1,6 +1,8 @@
 from typing import List, MutableSequence, Optional, Union
 import zmq
-import socket
+import pickle
+import psutil
+import numpy as np
 
 try:
     from loguru import logger
@@ -11,66 +13,32 @@ except ModuleNotFoundError:
     logger = logging.getLogger('socket-server')
 
 
-def is_port_open(port: int) -> bool:
-    a_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    location = ("127.0.0.1", port)
-    result_of_check = a_socket.connect_ex(location)
-
-    res = False
-    if result_of_check == 0:
-        print("Port is open")
-        res = True
-    else:
-        print("Port is not open")
-        res = False
-    a_socket.close()
-    return res
-
-
-def string_to_int(s):
-    ord3 = lambda x: '%.3d' % ord(x)
-    return int(''.join(map(ord3, s)))
-
-
-def get_random_port(name: Union[str, List[str]] = '') -> int:
-    port = hash(string_to_int(name)) % 100 + 5555
-    return port
-
-
-import psutil
-import numpy as np
-
-
 class FreePort():
-    def __init__(self, name, is_server=True) -> None:
-        seed = hash(string_to_int(name)) % 2**32
-        self.rng = np.random.RandomState(seed)
-        self.is_server = is_server
+    def __init__(self) -> None:
+        self.rng = np.random.RandomState(0)
 
-    def getfreeport(self):
+    def getfreeports(self, num_ports=10):
         port = self.rng.randint(49152, 65535)
-        if not self.is_server:
-            return port
         portsinuse = []
+        ports = []
         while True:
             conns = psutil.net_connections()
             for conn in conns:
                 portsinuse.append(conn.laddr[1])
-            if port in portsinuse:
+            if port in portsinuse or port in ports:
                 port = self.rng.randint(49152, 65535)
             else:
+                ports.append(port)
+            if len(ports) == num_ports:
                 break
-        return port
-
-    def __call__(self):
-        return self.getfreeport()
+        return ports
 
 
 class SockPairs(object):
     def __init__(self,
                  name_self: str = 'RPI',
-                 name_other: List[str] = ['NU', 'MU', 'Pooja']):
+                 name_other: List[str] = ['NU', 'MU', 'Pooja'],
+                 is_main=False):
         self.name_self = name_self
 
         if isinstance(name_other, str):
@@ -78,10 +46,38 @@ class SockPairs(object):
 
         self.name_other = name_other
 
+        all_names = [name_self] + name_other
+        if is_main:
+            ports = self.create_port_pair(all_names)
+        else:
+            ports = self.read_ports()
+
         # Create pairs of sockets
         self.sock_pairs = {}
         for name in self.name_other:
-            self.sock_pairs[name] = _SocketPair(name, self.name_self)
+            _port = ports[tuple(sorted((name, self.name_self)))]
+            self.sock_pairs[name] = _SocketPair(name,
+                                                self.name_self,
+                                                port=_port)
+
+    def create_port_pair(self, names: List[str]) -> int:
+        import itertools as it
+        names = tuple(sorted(names))
+        ports = {}
+        pairs = list(it.combinations(names, 2))
+
+        all_ports = FreePort().getfreeports(num_ports=len(pairs))
+        for i, pair in enumerate(pairs):
+            ports[pair] = all_ports[i]
+
+        tmpfile = '/tmp/tmp_clasp_ports.pkl'
+        pickle.dump(ports, open(tmpfile, 'wb'))
+        return ports
+
+    def read_ports(self) -> dict:
+        with open('/tmp/tmp_clasp_ports.pkl', 'rb') as f:
+            ports = pickle.load(f)
+        return ports
 
     def send(self, msg: Union[str, dict], to: Optional[str] = None):
         if isinstance(to, MutableSequence):
@@ -128,8 +124,8 @@ class _SocketPair(object):
         if self.port is None:
             self.port = FreePort(''.join(self.names),
                                  is_server=self.is_server).getfreeport()
-            logger.debug(
-                f"port between {self.names[0]} & {self.names[1]}: {self.port}")
+        logger.debug(
+            f"port between {self.names[0]} & {self.names[1]}: {self.port}")
 
         if name_self is None:
             name_self = names[0]

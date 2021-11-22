@@ -4,7 +4,7 @@ import time
 myself = 'Pooja'
 others = ['NU', 'RPI', 'MU']
 
-sockObj = SockPairs(myself, others)
+sockObj = SockPairs(myself, others, is_main=True)
 
 # start
 sockObj.sync_all()
