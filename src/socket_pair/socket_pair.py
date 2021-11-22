@@ -35,9 +35,36 @@ def string_to_int(s):
 
 def get_random_port(name: Union[str, List[str]] = '') -> int:
     port = hash(string_to_int(name)) % 100 + 5555
-    # while not is_port_open(port):
-    #     port += 1
     return port
+
+
+import psutil
+import numpy as np
+
+
+class FreePort():
+    def __init__(self, name, is_server=True) -> None:
+        seed = hash(string_to_int(name)) % 2**32
+        self.rng = np.random.RandomState(seed)
+        self.is_server = is_server
+
+    def getfreeport(self):
+        port = self.rng.randint(49152, 65535)
+        if not self.is_server:
+            return port
+        portsinuse = []
+        while True:
+            conns = psutil.net_connections()
+            for conn in conns:
+                portsinuse.append(conn.laddr[1])
+            if port in portsinuse:
+                port = self.rng.randint(49152, 65535)
+            else:
+                break
+        return port
+
+    def __call__(self):
+        return self.getfreeport()
 
 
 class SockPairs(object):
@@ -93,22 +120,24 @@ class _SocketPair(object):
         self.names = sorted(list(names))
         self.port = port
 
-        if self.port is None:
-            self.port = get_random_port(''.join(self.names))
-
         # define who is server and client
         self.server_name = self.names[0]
         self.client_name = self.names[1]
+        self.is_server = name_self == self.server_name
+
+        if self.port is None:
+            self.port = FreePort(''.join(self.names),
+                                 is_server=self.is_server).getfreeport()
+            logger.debug(
+                f"port between {self.names[0]} & {self.names[1]}: {self.port}")
 
         if name_self is None:
             name_self = names[0]
 
         if name_self == self.server_name:
             self.init_server()
-            self.is_server = True
         else:
             self.init_client()
-            self.is_server = False
 
     def init_server(self):
         self.context = zmq.Context()
