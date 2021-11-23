@@ -22,27 +22,27 @@ pip install git+https://github.com/asrafulashiq/socket_pair
 
   ```python
   sockObj = SockPairs(name_self='RPI', 
-                      name_other=['NU', 'MU', 'Pooja'])
+                      name_other=['NU', 'MU', 'Wrapper'])
   ```
 
   And for `MU`:
 
   ```python
   sockObj = SockPairs(name_self='MU', 
-                      name_other=['NU', 'RPI', 'Pooja'])
+                      name_other=['NU', 'RPI', 'Wrapper'])
   ```
 
   And for `NU`:
 
   ```python
   sockObj = SockPairs(name_self='NU', 
-                      name_other=['MU', 'RPI', 'Pooja'])
+                      name_other=['MU', 'RPI', 'Wrapper'])
   ```
 
   And for Pooja, 
 
   ```python
-  sockObj = SockPairs(name_self='Pooja', 
+  sockObj = SockPairs(name_self='Wrapper', 
                       name_other=['NU', 'RPI', 'MU'])
   ```
 

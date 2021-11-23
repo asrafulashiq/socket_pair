@@ -37,13 +37,13 @@ class FreePort():
 class SockPairs(object):
     def __init__(self,
                  name_self: str = 'RPI',
-                 name_other: List[str] = ['NU', 'MU', 'Pooja'],
+                 name_other: List[str] = ['NU', 'MU', 'Wrapper'],
                  is_main=False):
         self.name_self = name_self
 
         if isinstance(name_other, str):
             name_other = [name_other]
-
+        name_other = list(sorted(name_other))
         self.name_other = name_other
 
         all_names = [name_self] + name_other
