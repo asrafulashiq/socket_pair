@@ -2,7 +2,7 @@ from socket_pair.socket_pair import SockPairs
 import time
 
 myself = 'NU'
-others = ['RPI', 'Pooja', 'MU']
+others = ['RPI', 'Wrapper', 'MU']
 
 sockObj = SockPairs(myself, others)
 

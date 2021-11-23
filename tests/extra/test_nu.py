@@ -2,7 +2,7 @@ from socket_pair.socket_pair import SockPairs
 import time
 
 myself = 'NU'
-others = ['RPI', 'Pooja']
+others = ['RPI', 'Wrapper']
 other = 'RPI'
 
 sockObj = SockPairs(myself, others)
@@ -27,7 +27,6 @@ sockObj.sync_with('RPI')
 # NU finishes processing RPI and MU
 # sync with RPI to send results
 sockObj.sync_with('RPI')
-
 
 # batch-end: final sync
 sockObj.sync_all()

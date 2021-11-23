@@ -2,15 +2,14 @@ from socket_pair.socket_pair import SockPairs
 import time
 
 myself = 'RPI'
-others = ['NU', 'Pooja']
-# others = ['Pooja']
+others = ['NU', 'Wrapper']
+# others = ['Wrapper']
 other = 'NU'
 
 sockObj = SockPairs(myself, others)
 
 # start
 sockObj.sync_all()
-
 
 sockObj.sync_all()
 # read frames
