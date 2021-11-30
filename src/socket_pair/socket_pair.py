@@ -12,6 +12,8 @@ except ModuleNotFoundError:
     logging.basicConfig(format=FORMAT)
     logger = logging.getLogger('socket-server')
 
+TMP_FILE = '/tmp/tmp_clasp_ports.pkl'
+
 
 class FreePort():
     def __init__(self) -> None:
@@ -38,8 +40,11 @@ class SockPairs(object):
     def __init__(self,
                  name_self: str = 'RPI',
                  name_other: List[str] = ['NU', 'MU', 'Wrapper'],
-                 is_main=False):
+                 is_main=False,
+                 verbose=False):
         self.name_self = name_self
+        self.verbose = verbose
+        self.is_main = is_main
 
         if isinstance(name_other, str):
             name_other = [name_other]
@@ -58,7 +63,8 @@ class SockPairs(object):
             _port = ports[tuple(sorted((name, self.name_self)))]
             self.sock_pairs[name] = _SocketPair(name,
                                                 self.name_self,
-                                                port=_port)
+                                                port=_port,
+                                                verbose=self.verbose)
 
     def create_port_pair(self, names: List[str]) -> int:
         import itertools as it
@@ -70,12 +76,11 @@ class SockPairs(object):
         for i, pair in enumerate(pairs):
             ports[pair] = all_ports[i]
 
-        tmpfile = '/tmp/tmp_clasp_ports.pkl'
-        pickle.dump(ports, open(tmpfile, 'wb'))
+        pickle.dump(ports, open(TMP_FILE, 'wb'))
         return ports
 
     def read_ports(self) -> dict:
-        with open('/tmp/tmp_clasp_ports.pkl', 'rb') as f:
+        with open(TMP_FILE, 'rb') as f:
             ports = pickle.load(f)
         return ports
 
@@ -95,7 +100,8 @@ class SockPairs(object):
     def sync_all(self):
         for name in self.name_other:
             self.sock_pairs[name].sync()
-        logger.info('All groups are in sync')
+        if self.verbose:
+            logger.info('All groups are in sync')
 
     def sync_with(self, name: str):
         if name not in self.name_other:
@@ -107,7 +113,8 @@ class _SocketPair(object):
     def __init__(self,
                  name_other: Optional[str] = 'B',
                  name_self: Optional[str] = 'A',
-                 port: Optional[int] = None) -> None:
+                 port: Optional[int] = None,
+                 verbose=True) -> None:
         names = [name_other, name_self]
         assert len(names) == 2
 
@@ -115,6 +122,7 @@ class _SocketPair(object):
         self.name_other = name_other
         self.names = sorted(list(names))
         self.port = port
+        self.verbose = verbose
 
         # define who is server and client
         self.server_name = self.names[0]
@@ -146,7 +154,6 @@ class _SocketPair(object):
                 self.port += 1
             else:
                 break
-
         logger.info(f"Server {self.server_name} started on port {self.port}")
 
     def init_client(self):
@@ -160,7 +167,6 @@ class _SocketPair(object):
                 self.port += 1
             else:
                 break
-
         logger.info(
             f"Client {self.client_name} Connected to server {self.server_name} on port {self.port}"
         )
@@ -176,7 +182,8 @@ class _SocketPair(object):
         sync_msg = f'sync between {self.names[0]} and {self.names[1]}'
         self.send(sync_msg)
         msg = self.listen()
-        print(msg)
+        if self.verbose:
+            logger.debug(msg)
 
     def finish(self) -> None:
         self.socket.close()

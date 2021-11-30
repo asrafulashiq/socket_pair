@@ -6,22 +6,32 @@ others = ['NU', 'Wrapper', 'MU']
 
 sockObj = SockPairs(myself, others)
 
-# start
-sockObj.sync_all()
+batch = 0
 
-sockObj.sync_all()
-# read frames
-time.sleep(3)
+while True:
+    print(f"BATCH {batch}")
+    # start
+    sockObj.sync_all()
 
-# sync with NU after processing bins
-sockObj.sync_with('NU')
-# NU will read bin results
+    if sockObj.listen('Wrapper') == 'STOP':
+        print('No more frames')
+        break
 
-# NU finishes processing RPI and MU
-sockObj.sync_with('NU')
+    sockObj.sync_all()
+    # read frames
+    time.sleep(3)
 
-# create feed
-time.sleep(3)
+    # sync with NU after processing bins
+    sockObj.sync_with('NU')
+    # NU will read bin results
 
-# batch-end: final sync
-sockObj.sync_all()
+    # NU finishes processing RPI and MU
+    sockObj.sync_with('NU')
+
+    # create feed
+    time.sleep(3)
+
+    # batch-end: final sync
+    sockObj.sync_all()
+
+    batch += 1

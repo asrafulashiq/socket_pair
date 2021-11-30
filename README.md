@@ -2,10 +2,18 @@
 
 ## Installation
 
-First, install `socket_pair` package.
+First, install `socket_pair` package by `pip`.
 
 ```bash
-pip install git+https://github.com/asrafulashiq/socket_pair
+pip install --upgrade git+https://github.com/asrafulashiq/socket_pair
+```
+
+Or, clone and install from the directory
+
+```bash
+git clone https://github.com/asrafulashiq/socket_pair.git
+cd socket_pair
+pip install .
 ```
 
 ## Instruction
