@@ -11,14 +11,14 @@ batch = 0
 while True:
     print(f"BATCH {batch}")
 
-    # start
+    # batch start
     sockObj.sync_all()
 
     if sockObj.listen('Wrapper') == 'STOP':
         print('No more frames')
         break
 
-    # read frames
+    # read frames after sync_all
     sockObj.sync_all()
 
     # process frames
@@ -29,7 +29,7 @@ while True:
 
     # NU will read pax results
 
-    # batch-end: final sync
+    # batch-end
     sockObj.sync_all()
 
     batch += 1
