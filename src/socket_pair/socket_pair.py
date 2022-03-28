@@ -3,6 +3,7 @@ import zmq
 import pickle
 import psutil
 import numpy as np
+import os
 
 try:
     from loguru import logger
@@ -16,6 +17,7 @@ TMP_FILE = '/tmp/tmp_clasp_ports.pkl'
 
 
 class FreePort():
+
     def __init__(self) -> None:
         self.rng = np.random.RandomState(0)
 
@@ -37,6 +39,7 @@ class FreePort():
 
 
 class SockPairs(object):
+
     def __init__(self,
                  name_self: str = 'RPI',
                  name_other: List[str] = ['NU', 'MU', 'Wrapper'],
@@ -77,6 +80,7 @@ class SockPairs(object):
             ports[pair] = all_ports[i]
 
         pickle.dump(ports, open(TMP_FILE, 'wb'))
+        os.chmod(TMP_FILE, 0o777)
         return ports
 
     def read_ports(self) -> dict:
@@ -110,6 +114,7 @@ class SockPairs(object):
 
 
 class _SocketPair(object):
+
     def __init__(self,
                  name_other: Optional[str] = 'B',
                  name_self: Optional[str] = 'A',
